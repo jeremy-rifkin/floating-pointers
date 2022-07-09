@@ -5,34 +5,21 @@
 #include <cstddef>
 #include <cstdint>
 #include <limits>
+#include <memory>
 #include <type_traits>
 
 namespace based {
     static_assert(std::numeric_limits<double>::is_iec559);
 
-    struct inftyptr_t {};
-    struct nanptr_t {};
-    struct negativenullptr_t {};
-    struct negativeinftyptr_t {};
-
-    static constexpr inftyptr_t inftyptr;
-    static constexpr nanptr_t nanptr;
-    static constexpr negativenullptr_t negativenullptr;
-    static constexpr negativeinftyptr_t negativeinftyptr;
-
     template<typename T>
     class floating_pointer {
         double _ptr;
         static constexpr std::size_t unit = sizeof(T);
-        constexpr floating_pointer(double ptr) : _ptr(ptr) {}
+        explicit constexpr floating_pointer(double ptr) : _ptr(ptr) {}
     public:
         constexpr floating_pointer() = default;
         constexpr floating_pointer(T* ptr) : _ptr(uintptr_t(ptr)) {}
         constexpr floating_pointer(std::nullptr_t) : _ptr(0) {}
-        constexpr floating_pointer(inftyptr_t) : _ptr(INFINITY) {}
-        constexpr floating_pointer(nanptr_t) : _ptr(NAN) {}
-        constexpr floating_pointer(negativenullptr_t) : _ptr(-0) {}
-        constexpr floating_pointer(negativeinftyptr_t) : _ptr(-INFINITY) {}
         // Conversion
         constexpr operator bool() const {
             return _ptr;
@@ -119,7 +106,67 @@ namespace based {
         friend constexpr floating_pointer<T> sqrt(floating_pointer<T> ptr) {
             return {std::sqrt(ptr._ptr)};
         }
+        // Constants
+        friend struct infinityptr_t;
+        friend struct nanptr_t;
+        friend struct negativenullptr_t;
+        friend struct negativeinfinityptr_t;
     };
+
+    struct infinityptr_t {
+        template<typename T> operator floating_pointer<T>() const {
+            return floating_pointer<T>(INFINITY);
+        }
+    };
+    struct nanptr_t {
+        template<typename T> operator floating_pointer<T>() const {
+            return floating_pointer<T>(NAN);
+        }
+    };
+    struct negativenullptr_t {
+        template<typename T> operator floating_pointer<T>() const {
+            return floating_pointer<T>(-0.0);
+        }
+    };
+    struct negativeinfinityptr_t {
+        template<typename T> operator floating_pointer<T>() const {
+            return floating_pointer<T>(-INFINITY);
+        }
+    };
+
+    static constexpr infinityptr_t infinityptr;
+    static constexpr nanptr_t nanptr;
+    static constexpr negativenullptr_t negativenullptr;
+    static constexpr negativeinfinityptr_t negativeinfinityptr;
+
+    namespace detail {
+        template<typename T> constexpr T& id(T& t) { return t; };
+        template<typename T> void id(T&&) = delete;
+    }
+
+    template<typename T>
+    class floating_reference_wrapper {
+        floating_pointer<T> ptr;
+    public:
+        using type = T;
+        template<typename U,
+                 typename std::enable_if<
+                     !std::is_same<
+                         typename std::remove_cv<typename std::remove_reference<U>::type>::type,
+                         floating_reference_wrapper
+                     >::value,
+                     int
+                 >::type = 0>
+        constexpr floating_reference_wrapper(U&& u) : ptr(std::addressof(detail::id(std::forward<U>(u)))) {}
+        constexpr operator T&() const {
+            return *ptr;
+        }
+        constexpr T& get() const {
+            return *ptr;
+        }
+    };
+
+    template<typename T> floating_reference_wrapper(T&) -> floating_reference_wrapper<T>;
 }
 
 #endif
