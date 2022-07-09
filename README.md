@@ -72,12 +72,41 @@ public:
     template<typename V, typename std::enable_if<std::is_arithmetic<V>::value, int>::type = 0>
     constexpr floating_pointer& operator-=(V);
     template<typename V, typename std::enable_if<std::is_arithmetic<V>::value, int>::type = 0>
+    constexpr floating_pointer& operator*=(V);
+    template<typename V, typename std::enable_if<std::is_arithmetic<V>::value, int>::type = 0>
+    constexpr floating_pointer& operator/=(V);
+    template<typename V, typename std::enable_if<std::is_arithmetic<V>::value, int>::type = 0>
+    constexpr floating_pointer& operator%=(V);
+    template<typename V, typename std::enable_if<std::is_arithmetic<V>::value, int>::type = 0>
     constexpr floating_pointer operator+(V) const;
     template<typename V, typename std::enable_if<std::is_arithmetic<V>::value, int>::type = 0>
     constexpr floating_pointer operator-(V) const;
+    template<typename V, typename std::enable_if<std::is_arithmetic<V>::value, int>::type = 0>
+    constexpr floating_pointer operator*(V) const;
+    template<typename V, typename std::enable_if<std::is_arithmetic<V>::value, int>::type = 0>
+    constexpr floating_pointer operator/(V) const;
+    template<typename V, typename std::enable_if<std::is_arithmetic<V>::value, int>::type = 0>
+    constexpr floating_pointer operator%(V) const;
     // Math
     friend constexpr floating_pointer<T> abs(floating_pointer<T>);
     friend constexpr floating_pointer<T> sqrt(floating_pointer<T>);
+    template<typename V, typename std::enable_if<std::is_arithmetic<V>::value, int>::type = 0>
+    friend constexpr floating_pointer<T> fmod(floating_pointer<T>, V);
+    template<typename U, typename V, typename std::enable_if<
+                                                  std::is_arithmetic<U>::value && std::is_arithmetic<V>::value,
+                                                  int
+                                              >::type = 0>
+    friend constexpr floating_pointer<T> fma(floating_pointer<T>, U, V);
+    template<typename U, typename V, typename std::enable_if<
+                                                  std::is_arithmetic<U>::value && std::is_arithmetic<V>::value,
+                                                  int
+                                              >::type = 0>
+    friend constexpr floating_pointer<T> fma(U, floating_pointer<T>, V);
+    template<typename U, typename V, typename std::enable_if<
+                                                  std::is_arithmetic<U>::value && std::is_arithmetic<V>::value,
+                                                  int
+                                              >::type = 0>
+    friend constexpr floating_pointer<T> fma(U, V, floating_pointer<T>);
 }
 ```
 

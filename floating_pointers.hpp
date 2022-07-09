@@ -92,6 +92,21 @@ namespace based {
             return *this;
         }
         template<typename V, typename std::enable_if<std::is_arithmetic<V>::value, int>::type = 0>
+        constexpr floating_pointer& operator*=(V v) {
+            _ptr *= v;
+            return *this;
+        }
+        template<typename V, typename std::enable_if<std::is_arithmetic<V>::value, int>::type = 0>
+        constexpr floating_pointer& operator/=(V v) {
+            _ptr /= v;
+            return *this;
+        }
+        template<typename V, typename std::enable_if<std::is_arithmetic<V>::value, int>::type = 0>
+        constexpr floating_pointer& operator%=(V v) {
+            _ptr = std::fmod(ptr, v);
+            return *this;
+        }
+        template<typename V, typename std::enable_if<std::is_arithmetic<V>::value, int>::type = 0>
         constexpr floating_pointer operator+(V v) const {
             return _ptr + v * unit;
         }
@@ -99,12 +114,49 @@ namespace based {
         constexpr floating_pointer operator-(V v) const {
             return _ptr - v * unit;
         }
+        template<typename V, typename std::enable_if<std::is_arithmetic<V>::value, int>::type = 0>
+        constexpr floating_pointer operator*(V v) const {
+            return _ptr * v;
+        }
+        template<typename V, typename std::enable_if<std::is_arithmetic<V>::value, int>::type = 0>
+        constexpr floating_pointer operator/(V v) const {
+            return _ptr / unit;
+        }
+        template<typename V, typename std::enable_if<std::is_arithmetic<V>::value, int>::type = 0>
+        constexpr floating_pointer operator%(V v) const {
+            return std::fmod(ptr, v);
+        }
         // Math
         friend constexpr floating_pointer<T> abs(floating_pointer<T> ptr) {
             return {std::abs(ptr._ptr)};
         }
         friend constexpr floating_pointer<T> sqrt(floating_pointer<T> ptr) {
             return {std::sqrt(ptr._ptr)};
+        }
+        template<typename V, typename std::enable_if<std::is_arithmetic<V>::value, int>::type = 0>
+        friend constexpr floating_pointer<T> fmod(floating_pointer<T> x, V v) {
+            return {x % v};
+        }
+        template<typename U, typename V, typename std::enable_if<
+                                                      std::is_arithmetic<U>::value && std::is_arithmetic<V>::value,
+                                                      int
+                                                  >::type = 0>
+        friend constexpr floating_pointer<T> fma(floating_pointer<T> x, U y, V z) {
+            return {x * y + z};
+        }
+        template<typename U, typename V, typename std::enable_if<
+                                                      std::is_arithmetic<U>::value && std::is_arithmetic<V>::value,
+                                                      int
+                                                  >::type = 0>
+        friend constexpr floating_pointer<T> fma(U x, floating_pointer<T> y, V z) {
+            return {x * y + z};
+        }
+        template<typename U, typename V, typename std::enable_if<
+                                                      std::is_arithmetic<U>::value && std::is_arithmetic<V>::value,
+                                                      int
+                                                  >::type = 0>
+        friend constexpr floating_pointer<T> fma(U x, V y, floating_pointer<T> z) {
+            return {x * y + z};
         }
         // Constants
         friend struct infinityptr_t;
